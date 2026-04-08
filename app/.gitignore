@@ -1,7 +1,0 @@
-*.pyc
-.env
-venv/
-ml/creditcard.csv
-*.csv
-*.xlsx
-ml/data/
