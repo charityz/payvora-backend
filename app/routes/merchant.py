@@ -1,19 +1,19 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.merchant_model import MerchantRegister, MerchantLogin
 import uuid
 from app.database.db import merchant_collection
 from app.utils.services import hash_password, verify_password
 from app.utils.generate_key import generate_secret_key, generate_public_key
 import jwt
-from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Depends
+import os
+from dotenv import load_dotenv
+from datetime import datetime, timedelta, timezone
 from app.utils.security import get_current_merchant
 from app.database.db import merchant_collection
 from app.schemas.merchant_model import UpdateProfileRequest, WebhookRequest, UpdatePasswordRequest
 
-
-
-SECRET_KEY = "your_secret_key"
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 router = APIRouter()
 
 @router.post("/register")
@@ -35,7 +35,7 @@ def register_merchant(data: MerchantRegister):
         "logo_url": data.logo_url,
         "public_key": generate_public_key(),
         "secret_key": generate_secret_key(),
-        "created_at": datetime.now()
+        "created_at": datetime.now(timezone.utc)
     }
 
     merchant_collection.insert_one(merchant)
@@ -63,7 +63,7 @@ def login(data: MerchantLogin):
         "business_name": user["business_name"],
         "public_key": user["public_key"],  
         "secret_key": user["secret_key"],
-        "exp": datetime.utcnow() + timedelta(hours=2)
+        "exp": datetime.now(timezone.utc) + timedelta(hours=2)
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
@@ -117,7 +117,4 @@ def update_webhook(data: WebhookRequest, merchant: dict = Depends(get_current_me
 @router.get("/webhook")
 def get_webhook(merchant: dict = Depends(get_current_merchant)):
     return {"webhook_url": merchant.get("webhook_url", "")}
-
-
-
 

@@ -1,0 +1,10 @@
+fastapi[standard]
+pymongo
+python-dotenv
+PyJWT
+bcrypt
+fastapi-mail
+pydantic[email]
+reportlab
+Pillow
+httpx

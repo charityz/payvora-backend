@@ -6,12 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Payvora")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Include routes
-app.include_router(merchant.router, prefix="/api/v1", tags=["Merchant"])
-app.include_router(payment.router, prefix="/api/v1", tags=["Payments"])
-
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -19,3 +13,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routes
+app.include_router(merchant.router, prefix="/api/v1", tags=["Merchant"])
+app.include_router(payment.router, prefix="/api/v1", tags=["Payments"])

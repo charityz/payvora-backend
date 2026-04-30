@@ -2,9 +2,12 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from app.database.db import merchant_collection
 import jwt
-from merchant import SECRET_KEY
+import os
+from dotenv import load_dotenv
 from fastapi.templating import Jinja2Templates
 
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 templates = Jinja2Templates(directory="templates")
 router = APIRouter()
@@ -18,7 +21,7 @@ def verify_token(request: Request):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return payload
-    except:
+    except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Invalid token")
     
 

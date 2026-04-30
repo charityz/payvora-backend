@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from typing import Optional
 
 
@@ -7,7 +7,7 @@ class MerchantRegister(BaseModel):
     email: str
     password: str
     business_name: str
-    logo_url: Optional[str]
+    logo_url: Optional[HttpUrl]
 
 class MerchantLogin(BaseModel):
     email: str

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.database.db import transaction_collection
 
 
@@ -26,7 +26,7 @@ def calculate_fraud_score(
     reasons = []
     signals = {}
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # ── SIGNAL 1: LARGE AMOUNT ──
     if amount >= HIGH_AMOUNT_THRESHOLD:

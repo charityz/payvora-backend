@@ -8,7 +8,7 @@ from app.utils.security import get_api_key
 from fastapi.templating import Jinja2Templates
 from app.utils.security import get_current_merchant
 from app.utils.email import send_receipt_email
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi.responses import StreamingResponse
 from app.utils.receipt_pdf import generate_receipt_pdf
 import io
@@ -24,6 +24,7 @@ router = APIRouter()
 
 @router.post("/initialize_payment")
 def initialize_payment(
+    request: Request,
     data: TransactionRequest,
     merchant: dict = Depends(get_api_key)
 ):
@@ -52,13 +53,13 @@ def initialize_payment(
         "risk_level": fraud_result["risk_level"],
         "fraud_reasons": fraud_result["fraud_reasons"],
         "signals": fraud_result["signals"],
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
         "completed_at": None,
     }
 
     transaction_collection.insert_one(transaction)
 
-    payment_link = f"http://localhost:8000/api/v1/pay/{reference}"
+    payment_link = str(request.url_for("payment_page", reference=reference))
 
     return {
         "message": "Payment initialized successfully",
@@ -67,8 +68,6 @@ def initialize_payment(
         "fraud_score": fraud_result["fraud_score"],
         "risk_level": fraud_result["risk_level"],
     }
-
-
 
 
 # PAY REFERENCE
@@ -92,46 +91,7 @@ def payment_page(request: Request, reference: str):
 
 
     
-# PAYMENT COMPLETION      
-# @router.post("/payment/complete/{reference}")
-# async def complete_payment(reference: str):
-#     transaction = transaction_collection.find_one({"reference": reference})
-
-#     if not transaction:
-#         raise HTTPException(status_code=404, detail="Transaction not found")
-
-#     if transaction["status"] == "success":
-#         raise HTTPException(status_code=400, detail="Payment already completed")
-
-#     completed_at = datetime.utcnow()
-
-#     transaction_collection.update_one(
-#         {"reference": reference},
-#         {"$set": {"status": "success", "completed_at": completed_at}}
-#     )
-#     print(f"✅ Payment complete for {reference}")           # ← add this
-#     print(f"📧 Sending email to: {transaction.get('email')}")  # ← add this
-
-
-#     try:
-#         await send_receipt_email(
-#             customer_email=transaction.get("email", ""),
-#             customer_name=transaction.get("email", "").split("@")[0],
-#             business_name=transaction.get("business_name", ""),
-#             logo_url=transaction.get("logo_url", ""),   # ← from transaction
-#             amount=float(transaction.get("amount", 0)),
-#             purpose=transaction.get("purpose", ""),
-#             reference=reference,
-#             payment_method=transaction.get("payment_method", "card"),
-#             date=completed_at.strftime("%d %B %Y, %I:%M %p"),
-#         )
-#     except Exception as e:
-#         print(f"Email error: {e}")
-
-#     return {"message": "Payment successful", "receipt_sent": True}
-    
-    
-
+# PAYMENT COMPLETION
 @router.post("/payment/complete/{reference}")
 async def complete_payment(reference: str):
     transaction = transaction_collection.find_one({"reference": reference})
@@ -140,7 +100,7 @@ async def complete_payment(reference: str):
     if transaction["status"] == "success":
         raise HTTPException(status_code=400, detail="Payment already completed")
 
-    completed_at = datetime.utcnow()
+    completed_at = datetime.now(timezone.utc)
     transaction_collection.update_one(
         {"reference": reference},
         {"$set": {"status": "success", "completed_at": completed_at}}

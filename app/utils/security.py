@@ -1,12 +1,13 @@
-from fastapi import Security, HTTPException
+from fastapi import Security, HTTPException, Depends
 from fastapi.security.api_key import APIKeyHeader
 from app.database.db import merchant_collection
-from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
-from app.database.db import merchant_collection
+import os
+from dotenv import load_dotenv
 
-SECRET_KEY = "your_secret_key"
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 bearer_scheme = HTTPBearer()
 
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
