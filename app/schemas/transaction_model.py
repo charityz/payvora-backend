@@ -17,3 +17,4 @@ class TransactionRequest(BaseModel):
     customer_name: Optional[str] = "Anonymous"
     customer_email: Optional[EmailStr] = None
     purpose: str = ""
+    

@@ -1,20 +1,16 @@
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
-from fastapi import HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi.responses import HTMLResponse, StreamingResponse
 from app.schemas.transaction_model import TransactionRequest
-from app.database.db import transaction_collection
+from app.database.db import transaction_collection, merchant_collection
 from app.utils.generate_reference import generate_reference
-from app.utils.security import get_api_key
+from app.utils.security import get_api_key, get_current_merchant
 from fastapi.templating import Jinja2Templates
-from app.utils.security import get_current_merchant
 from app.utils.email import send_receipt_email
 from datetime import datetime, timezone
-from fastapi.responses import StreamingResponse
 from app.utils.receipt_pdf import generate_receipt_pdf
 import io
 from app.utils.fraud_detector import calculate_fraud_score
 import httpx
-from app.database.db import merchant_collection
 
 
 templates = Jinja2Templates(directory="app/templates")
@@ -60,7 +56,6 @@ def initialize_payment(
     transaction_collection.insert_one(transaction)
 
     payment_link = str(request.url_for("payment_page", reference=reference))
-
     return {
         "message": "Payment initialized successfully",
         "reference": reference,
@@ -87,8 +82,6 @@ def payment_page(request: Request, reference: str):
         "business": transaction.get("business_name"),
         "logo": transaction.get("logo_url")
     })
-
-
 
     
 # PAYMENT COMPLETION

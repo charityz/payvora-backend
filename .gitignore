@@ -4,9 +4,7 @@ __pycache__/
 .env.*
 *.env
 venv/
-ml/
 *.pkl
 *.csv
 *.xlsx
 .vscode/
-ml/creditcard.csv
